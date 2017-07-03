@@ -59,8 +59,7 @@
 
   - name: Save prod private key
     copy: content="{{ ec2_key.key.private_key }}" dest="{{ prod_keydest }}{{ prod_keypair }}.pem" mode=0600
-    when: ec2_key.changed
-    when: ec2info.instances[0] is not defined
+    when: (ec2_key.changed and ec2info.instances[0] is not defined)
 
   - name: Create prod EC2 instance
     local_action: ec2
