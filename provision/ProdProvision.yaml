@@ -18,10 +18,10 @@
   tasks:
   - name: Gather EC2_Facts and check
     ec2_remote_facts:
-      region: {{ prod_region }}
+      region: "{{ prod_region }}"
       filters:
         instance-state-name: running
-        "tag:Name": {{ prod_tag }}
+        "tag:Name": "{{ prod_tag }}"
     register: ec2info
     
   - name: Create production security group
