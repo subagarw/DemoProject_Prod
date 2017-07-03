@@ -1,0 +1,99 @@
+---
+
+- hosts: local
+  connection: local
+  gather_facts: False
+
+  vars:
+    prod_instance_type: t2.micro
+    prod_security_group: ansible_test
+    prod_image: ami-807876e3
+    prod_user: ubuntu
+    prod_keypair: ansible_test
+    prod_region: ap-southeast-2
+    prod_count: 1
+    prod_keydest: /ext/prod
+    prod_tag: ProdServer
+
+  tasks:
+  - name: Gather EC2_Facts and check
+    ec2_remote_facts:
+      region: {{ prod_region }}
+      filters:
+        instance-state-name: running
+        "tag:Name": {{ prod_tag }}
+    register: ec2info
+    
+  - name: Create production security group
+    local_action:
+      module: ec2_group
+      state: present
+      name: "{{ prod_security_group }}"
+      description: "security group for test server"
+      region: "{{ prod_region }}"
+      rules:
+        - proto: tcp
+          from_port: 22
+          to_port: 22
+          cidr_ip: 0.0.0.0/0
+        - proto: tcp
+          from_port: 80
+          to_port: 80
+          cidr_ip: 0.0.0.0/0
+        - proto: tcp
+          from_port: 8080
+          to_port: 8080
+          cidr_ip: 0.0.0.0/0
+      rules_egress:
+        - proto: all
+          cidr_ip: 0.0.0.0/0
+    register: Firewall
+    when: ec2info.instances[0] is not defined
+    
+  - name: Create prod Key-Pair
+    ec2_key:
+      name: "{{ prod_keypair }}"
+      region: "{{ prod_region }}"
+    register: ec2_key
+    when: ec2info.instances[0] is not defined
+
+  - name: Save prod private key
+    copy: content="{{ ec2_key.key.private_key }}" dest="{{ prod_keydest }}{{ prod_keypair }}.pem" mode=0600
+    when: ec2_key.changed
+    when: ec2info.instances[0] is not defined
+
+  - name: Create prod EC2 instance
+    local_action: ec2
+                  instance_type={{ prod_instance_type }}
+                  image={{ prod_image }}
+                  wait=true
+                  region={{ prod_region }}
+                  keypair={{ prod_keypair }}
+                  count={{ prod_count }}
+                  group={{ prod_security_group }}
+    register: ec2
+    when: ec2info.instances[0] is not defined
+
+  - name: Add tag to the prod instance
+    local_action: ec2_tag resource={{ item.id }} region={{ region }} state=present
+    with_items: "{{ ec2.instances }}"
+    args:
+      tags:
+        Name: ProdServer
+    when: ec2info.instances[0] is not defined
+
+  - name: Creating variable for prod Public IP
+    set_fact:
+      public_ip: "{{ item.public_ip }}"
+    with_items: "{{ ec2.instances }}"
+    when: ec2info.instances[0] is not defined
+
+  - name: Creating variable for prod Public IP
+    set_fact:
+      public_ip: "{{ ec2info.instances[0].public_ip }}"
+    when: ec2info.instances[0] is defined
+
+  - name: creating the prod Inventory
+    template:
+      src=./templates/prodinventory.j2
+      dest=/ext/prod/inventory

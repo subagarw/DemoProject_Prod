@@ -1,0 +1,5 @@
+[local]
+127.0.0.1
+
+[TestServers]
+{{ public_ip }} ansible_ssh_private_key_file={{ prod_keydest }}{{ prod_keypair }}.pem ansible_user={{ prod_user }}
