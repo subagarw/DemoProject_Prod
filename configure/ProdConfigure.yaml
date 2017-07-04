@@ -54,7 +54,7 @@
       group=root
       mode=0777
 
-  - name: Clone git test repository
+  - name: Clone git prod repository
     git:
       repo='https://github.com/subagarw/DemoProjectProd.git'
       dest=/avivaProd
