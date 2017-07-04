@@ -89,7 +89,7 @@
 
   - name: Creating variable for prod Public IP
     set_fact:
-      public_ip: "{{ ec2info.instances[0].public_ip }}"
+      public_ip: "{{ ec2info.instances[0].public_ip_address }}"
     when: ec2info.instances[0] is defined
 
   - name: creating the prod Inventory
