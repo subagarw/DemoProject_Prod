@@ -56,7 +56,7 @@
 
   - name: Clone git prod repository
     git:
-      repo='https://github.com/subagarw/DemoProjectProd.git'
+      repo='https://github.com/subagarw/DemoProject_Prod.git'
       dest=/avivaProd
       clone=yes
       update=yes
