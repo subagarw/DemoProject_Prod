@@ -9,7 +9,7 @@
     prod_security_group: ansible_prod
     prod_image: ami-807876e3
     prod_user: ubuntu
-    prod_keypair: ansible_test
+    prod_keypair: ansible_prod
     prod_region: ap-southeast-2
     prod_count: 1
     prod_keydest: /ext/prod/
