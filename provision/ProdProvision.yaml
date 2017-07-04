@@ -99,5 +99,5 @@
       
   - name: creating the URL
     template:
-      src=./templates/url.j2
+      src=./templates/ip.j2
       dest=/ext/prod/url
