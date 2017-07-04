@@ -6,7 +6,7 @@
 
   vars:
     prod_instance_type: t2.micro
-    prod_security_group: ansible_test
+    prod_security_group: ansible_prod
     prod_image: ami-807876e3
     prod_user: ubuntu
     prod_keypair: ansible_test
@@ -55,7 +55,7 @@
       name: "{{ prod_keypair }}"
       region: "{{ prod_region }}"
     register: ec2_key
-    when: ec2info.instances[0] is not defined
+    when: (ec2_key.changed and ec2info.instances[0] is not defined)
 
   - name: Save prod private key
     copy: content="{{ ec2_key.key.private_key }}" dest="{{ prod_keydest }}{{ prod_keypair }}.pem" mode=0600
